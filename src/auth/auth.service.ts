@@ -9,7 +9,7 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, ResetPasswordDto } from './dto/auth.dto';
 import { JwtPayload } from './jwt.strategy';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -115,5 +115,57 @@ export class AuthService {
     });
 
     return { message: 'Email successfully verified' };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.usersService.findOneByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException('User with this email does not exist');
+    }
+
+    const token = uuidv4();
+    const expires = new Date();
+    expires.setHours(expires.getHours() + 1);
+
+    await this.prisma.verificationToken.create({
+      data: {
+        identifier: user.email,
+        token: token,
+        expires: expires,
+      },
+    });
+
+    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+    console.log(`[MOCK EMAIL] Reset Password Link: ${resetLink}`);
+
+    return { message: 'Password reset link sent to your email' };
+  }
+
+  async resetPassword(resetDto: ResetPasswordDto) {
+    const resetRecord = await this.prisma.verificationToken.findUnique({
+      where: { token: resetDto.token },
+    });
+
+    if (!resetRecord) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    if (new Date() > resetRecord.expires) {
+      throw new BadRequestException('Reset token has expired');
+    }
+
+    const hashedPassword = await bcrypt.hash(resetDto.password, 10);
+
+    await this.prisma.user.update({
+      where: { email: resetRecord.identifier },
+      data: { password: hashedPassword },
+    });
+
+    await this.prisma.verificationToken.delete({
+      where: { token: resetDto.token },
+    });
+
+    return { message: 'Password has been successfully reset' };
   }
 }
