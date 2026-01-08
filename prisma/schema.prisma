@@ -20,20 +20,20 @@ enum UserRole {
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
-  emailVerified  DateTime?
+  emailVerified DateTime?
   name          String?
   password      String?
   role          UserRole
   image         String?
-  
-  accounts         Account[]
-  sessions         Session[]
-  talentProfile    TalentProfile?
-  employerProfile  EmployerProfile?
-  
+
+  accounts        Account[]
+  sessions        Session[]
+  talentProfile   TalentProfile?
+  employerProfile EmployerProfile?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([email])
   @@index([role])
 }
@@ -64,7 +64,7 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
 }
 
@@ -87,174 +87,174 @@ enum TalentTier {
 }
 
 model TalentProfile {
-  id                String        @id @default(cuid())
-  userId            String        @unique
-  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  firstName         String
-  lastName          String
-  phone             String?
-  location          String
-  profilePicture    String?
-  headline          String?
-  summary           String?       @db.Text
-  
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  firstName      String
+  lastName       String
+  phone          String?
+  location       String
+  profilePicture String?
+  headline       String?
+  summary        String? @db.Text
+
   currentRole       String?
-  yearsOfExperience Int           @default(0)
+  yearsOfExperience Int     @default(0)
   expectedSalaryMin Int?
   expectedSalaryMax Int?
-  
-  tier              TalentTier    @default(BASIC)
-  subscriptionId    String?
-  subscription      Subscription? @relation(fields: [subscriptionId], references: [id])
-  
-  applicationsThisMonth Int       @default(0)
-  lastApplicationReset  DateTime  @default(now())
-  
-  cvBuildsUsed      Int           @default(0)
-  cvReviewsUsed     Int           @default(0)
-  cvBuildsLimit     Int           @default(0)
-  cvReviewsLimit    Int           @default(0)
-  
-  profileCompleteness Float       @default(0)
-  profileViews        Int         @default(0)
-  lastActive          DateTime    @default(now())
-  
-  workExperiences   WorkExperience[]
-  educations        Education[]
-  skills            TalentSkill[]
-  certifications    Certification[]
-  portfolioItems    PortfolioItem[]
-  cvs               CV[]
-  applications      Application[]
-  interviews        Interview[]
-  savedJobs         SavedJob[]
-  savedSearches     SavedSearch[]
-  
+
+  tier           TalentTier    @default(BASIC)
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  applicationsThisMonth Int      @default(0)
+  lastApplicationReset  DateTime @default(now())
+
+  cvBuildsUsed   Int @default(0)
+  cvReviewsUsed  Int @default(0)
+  cvBuildsLimit  Int @default(0)
+  cvReviewsLimit Int @default(0)
+
+  profileCompleteness Float    @default(0)
+  profileViews        Int      @default(0)
+  lastActive          DateTime @default(now())
+
+  workExperiences WorkExperience[]
+  educations      Education[]
+  skills          TalentSkill[]
+  certifications  Certification[]
+  portfolioItems  PortfolioItem[]
+  cvs             CV[]
+  applications    Application[]
+  interviews      Interview[]
+  savedJobs       SavedJob[]
+  savedSearches   SavedSearch[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([tier, profileCompleteness])
   @@index([lastActive])
   @@index([userId])
 }
 
 model WorkExperience {
-  id          String        @id @default(cuid())
-  talentId    String
-  talent      TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
-  
+  id       String        @id @default(cuid())
+  talentId String
+  talent   TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
+
   jobTitle    String
   company     String
   location    String?
   startDate   DateTime
   endDate     DateTime?
-  isCurrent   Boolean       @default(false)
-  description String?       @db.Text
-  
+  isCurrent   Boolean   @default(false)
+  description String?   @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([talentId])
 }
 
 model Education {
-  id          String        @id @default(cuid())
-  talentId    String
-  talent      TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
-  
-  institution String
-  degree      String
+  id       String        @id @default(cuid())
+  talentId String
+  talent   TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
+
+  institution  String
+  degree       String
   fieldOfStudy String
-  startDate   DateTime
-  endDate     DateTime?
-  isCurrent   Boolean       @default(false)
-  grade       String?
-  
+  startDate    DateTime
+  endDate      DateTime?
+  isCurrent    Boolean   @default(false)
+  grade        String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([talentId])
 }
 
 model Skill {
-  id          String        @id @default(cuid())
-  name        String        @unique
-  category    String?
-  
-  talents     TalentSkill[]
-  
+  id       String  @id @default(cuid())
+  name     String  @unique
+  category String?
+
+  talents TalentSkill[]
+
   createdAt DateTime @default(now())
-  
+
   @@index([name])
 }
 
 model TalentSkill {
-  id          String        @id @default(cuid())
-  talentId    String
-  talent      TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
-  skillId     String
-  skill       Skill         @relation(fields: [skillId], references: [id])
-  
-  proficiency String?
+  id       String        @id @default(cuid())
+  talentId String
+  talent   TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
+  skillId  String
+  skill    Skill         @relation(fields: [skillId], references: [id])
+
+  proficiency       String?
   yearsOfExperience Int?
-  
+
   @@unique([talentId, skillId])
   @@index([talentId])
   @@index([skillId])
 }
 
 model Certification {
-  id            String        @id @default(cuid())
-  talentId      String
-  talent        TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
-  
+  id       String        @id @default(cuid())
+  talentId String
+  talent   TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
+
   name          String
   issuingOrg    String
   issueDate     DateTime
   expiryDate    DateTime?
   credentialId  String?
   credentialUrl String?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([talentId])
 }
 
 model PortfolioItem {
-  id          String        @id @default(cuid())
-  talentId    String
-  talent      TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
-  
+  id       String        @id @default(cuid())
+  talentId String
+  talent   TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
+
   title       String
-  description String?       @db.Text
+  description String? @db.Text
   url         String?
   imageUrl    String?
   category    String?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([talentId])
 }
 
 model CV {
-  id          String        @id @default(cuid())
-  talentId    String
-  talent      TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
-  
-  fileName    String
-  fileUrl     String
-  fileSize    Int
+  id       String        @id @default(cuid())
+  talentId String
+  talent   TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
+
+  fileName     String
+  fileUrl      String
+  fileSize     Int
   cloudinaryId String?
-  isPrimary   Boolean       @default(false)
-  
+  isPrimary    Boolean @default(false)
+
   applications Application[]
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([talentId, isPrimary])
   @@index([talentId])
 }
@@ -270,38 +270,38 @@ enum EmployerTier {
 }
 
 model EmployerProfile {
-  id              String        @id @default(cuid())
-  userId          String        @unique
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Company Info
-  companyName     String
-  companyLogo     String?
-  industry        String
-  companySize     String
-  website         String?
-  description     String?       @db.Text
-  location        String
-  
+  companyName String
+  companyLogo String?
+  industry    String
+  companySize String
+  website     String?
+  description String? @db.Text
+  location    String
+
   // Tier & Status
-  tier            EmployerTier  @default(BASIC)
-  subscriptionId  String?
-  subscription    Subscription? @relation(fields: [subscriptionId], references: [id])
-  
+  tier           EmployerTier  @default(BASIC)
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+
   // Limits
-  activeJobsCount Int           @default(0)
-  activeJobsLimit Int           @default(3)
-  candidateViewsThisMonth Int   @default(0)
-  candidateViewsLimit Int       @default(50)
-  lastViewsReset  DateTime      @default(now())
-  
+  activeJobsCount         Int      @default(0)
+  activeJobsLimit         Int      @default(3)
+  candidateViewsThisMonth Int      @default(0)
+  candidateViewsLimit     Int      @default(50)
+  lastViewsReset          DateTime @default(now())
+
   // Relations
-  jobs            Job[]
-  interviews      Interview[]
-  
+  jobs       Job[]
+  interviews Interview[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([tier])
   @@index([userId])
 }
@@ -319,39 +319,39 @@ enum SubscriptionStatus {
 }
 
 model Subscription {
-  id                String              @id @default(cuid())
-  userId            String
-  userType          UserRole
-  tier              String
-  
+  id       String   @id @default(cuid())
+  userId   String
+  userType UserRole
+  tier     String
+
   // Pricing
-  amount            Float
-  currency          String              @default("NGN")
-  
+  amount   Float
+  currency String @default("NGN")
+
   // Duration & Status
-  startDate         DateTime
-  endDate           DateTime
-  status            SubscriptionStatus
-  isRecurring       Boolean             @default(true)
-  
+  startDate   DateTime
+  endDate     DateTime
+  status      SubscriptionStatus
+  isRecurring Boolean            @default(true)
+
   // Payment Info
-  paymentReference  String              @unique
-  paymentMethod     String?
-  lastPaymentDate   DateTime?
-  nextPaymentDate   DateTime?
-  
+  paymentReference String    @unique
+  paymentMethod    String?
+  lastPaymentDate  DateTime?
+  nextPaymentDate  DateTime?
+
   // Nomba specific
   nombaTransactionId String?
   nombaPaymentLink   String?
-  
+
   // Relations
-  talents           TalentProfile[]
-  employers         EmployerProfile[]
-  payments          Payment[]
-  
+  talents   TalentProfile[]
+  employers EmployerProfile[]
+  payments  Payment[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([userId, status])
   @@index([endDate])
   @@index([status])
@@ -365,26 +365,26 @@ enum PaymentStatus {
 }
 
 model Payment {
-  id                String   @id @default(cuid())
-  subscriptionId    String
-  subscription      Subscription @relation(fields: [subscriptionId], references: [id])
-  
-  amount            Float
-  currency          String   @default("NGN")
-  status            PaymentStatus
-  
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+
+  amount   Float
+  currency String        @default("NGN")
+  status   PaymentStatus
+
   // Nomba Integration
-  nombaReference    String   @unique
+  nombaReference     String  @unique
   nombaTransactionId String?
-  nombaPaymentLink  String?
-  
-  paymentMethod     String?
-  paidAt            DateTime?
-  failureReason     String?
-  
+  nombaPaymentLink   String?
+
+  paymentMethod String?
+  paidAt        DateTime?
+  failureReason String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([status, createdAt])
   @@index([nombaReference])
 }
@@ -428,54 +428,54 @@ enum JobStatus {
 }
 
 model Job {
-  id                String        @id @default(cuid())
-  employerId        String
-  employer          EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  
+  id         String          @id @default(cuid())
+  employerId String
+  employer   EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
+
   // Job Details
-  title             String
-  description       String        @db.Text
-  category          JobCategory
-  employmentType    EmploymentType
-  location          String
-  isRemote          Boolean       @default(false)
-  
+  title          String
+  description    String         @db.Text
+  category       JobCategory
+  employmentType EmploymentType
+  location       String
+  isRemote       Boolean        @default(false)
+
   // Salary
-  salaryMin         Int?
-  salaryMax         Int?
-  salaryCurrency    String        @default("NGN")
-  
+  salaryMin      Int?
+  salaryMax      Int?
+  salaryCurrency String @default("NGN")
+
   // Requirements
-  requirements      String[]
-  responsibilities  String[]
-  benefits          String[]
-  
+  requirements     String[]
+  responsibilities String[]
+  benefits         String[]
+
   // Status & Visibility
-  status            JobStatus     @default(DRAFT)
-  isFeatured        Boolean       @default(false)
-  featuredUntil     DateTime?
+  status              JobStatus @default(DRAFT)
+  isFeatured          Boolean   @default(false)
+  featuredUntil       DateTime?
   applicationDeadline DateTime?
-  
+
   // External Posting
-  postToLinkedIn    Boolean       @default(false)
-  linkedInPosted    Boolean       @default(false)
-  linkedInUrl       String?
-  
+  postToLinkedIn Boolean @default(false)
+  linkedInPosted Boolean @default(false)
+  linkedInUrl    String?
+
   // Metrics
-  views             Int           @default(0)
-  applicationCount  Int           @default(0)
-  
+  views            Int @default(0)
+  applicationCount Int @default(0)
+
   // Screening
   screeningQuestions ScreeningQuestion[]
-  
+
   // Relations
-  applications      Application[]
-  savedByTalents    SavedJob[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  applications   Application[]
+  savedByTalents SavedJob[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   publishedAt DateTime?
-  
+
   @@index([employerId, status])
   @@index([category, status])
   @@index([status, publishedAt])
@@ -483,19 +483,19 @@ model Job {
 }
 
 model ScreeningQuestion {
-  id          String   @id @default(cuid())
-  jobId       String
-  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  
-  question    String
+  id    String @id @default(cuid())
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  question     String
   questionType String
-  options     String[]
-  isRequired  Boolean  @default(true)
-  order       Int
-  
+  options      String[]
+  isRequired   Boolean  @default(true)
+  order        Int
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([jobId])
 }
 
@@ -520,42 +520,42 @@ enum ApplicationStatus {
 }
 
 model Application {
-  id              String           @id @default(cuid())
-  jobId           String
-  job             Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  talentId        String
-  talent          TalentProfile    @relation(fields: [talentId], references: [id], onDelete: Cascade)
-  
+  id       String        @id @default(cuid())
+  jobId    String
+  job      Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  talentId String
+  talent   TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
+
   // Application Data
-  coverLetter     String?          @db.Text
-  cvId            String?
-  cv              CV?              @relation(fields: [cvId], references: [id])
-  
+  coverLetter String? @db.Text
+  cvId        String?
+  cv          CV?     @relation(fields: [cvId], references: [id])
+
   // Status & Stage
-  stage           ApplicationStage @default(APPLIED)
-  status          ApplicationStatus @default(ACTIVE)
-  
+  stage  ApplicationStage  @default(APPLIED)
+  status ApplicationStatus @default(ACTIVE)
+
   // Employer Evaluation
   rating          Int?
-  notes           String?          @db.Text
+  notes           String? @db.Text
   rejectionReason String?
-  
+
   // Screening Questions
   screeningAnswers Json?
-  
+
   // Timeline
-  appliedAt       DateTime         @default(now())
-  reviewedAt      DateTime?
-  interviewedAt   DateTime?
-  decidedAt       DateTime?
-  
+  appliedAt     DateTime  @default(now())
+  reviewedAt    DateTime?
+  interviewedAt DateTime?
+  decidedAt     DateTime?
+
   // Relations
-  interviews      Interview[]
-  statusHistory   ApplicationStatusHistory[]
-  
+  interviews    Interview[]
+  statusHistory ApplicationStatusHistory[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@unique([jobId, talentId])
   @@index([talentId, stage])
   @@index([jobId, stage])
@@ -566,14 +566,14 @@ model ApplicationStatusHistory {
   id            String      @id @default(cuid())
   applicationId String
   application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  
-  fromStage     ApplicationStage?
-  toStage       ApplicationStage
-  changedBy     String
-  notes         String?
-  
+
+  fromStage ApplicationStage?
+  toStage   ApplicationStage
+  changedBy String
+  notes     String?
+
   createdAt DateTime @default(now())
-  
+
   @@index([applicationId, createdAt])
 }
 
@@ -590,61 +590,61 @@ enum InterviewStatus {
 }
 
 model Interview {
-  id              String        @id @default(cuid())
-  applicationId   String
-  application     Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  jobId           String
-  talentId        String
-  talent          TalentProfile @relation(fields: [talentId], references: [id])
-  employerId      String
-  employer        EmployerProfile @relation(fields: [employerId], references: [id])
-  
+  id            String          @id @default(cuid())
+  applicationId String
+  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  jobId         String
+  talentId      String
+  talent        TalentProfile   @relation(fields: [talentId], references: [id])
+  employerId    String
+  employer      EmployerProfile @relation(fields: [employerId], references: [id])
+
   // Scheduling
-  scheduledAt     DateTime
-  duration        Int
-  timezone        String
-  
+  scheduledAt DateTime
+  duration    Int
+  timezone    String
+
   // Whereby Integration
-  meetingRoomUrl  String?
-  meetingRoomId   String?
-  
+  meetingRoomUrl String?
+  meetingRoomId  String?
+
   // Status
-  status          InterviewStatus @default(SCHEDULED)
-  
+  status InterviewStatus @default(SCHEDULED)
+
   // Meeting Details
-  notes           String?       @db.Text
-  
+  notes String? @db.Text
+
   // Scorecard
-  scorecard       InterviewScorecard?
-  
+  scorecard InterviewScorecard?
+
   // Reminders
-  remindersSent   Boolean       @default(false)
-  
+  remindersSent Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([talentId, status])
   @@index([employerId, scheduledAt])
   @@index([applicationId])
 }
 
 model InterviewScorecard {
-  id                  String    @id @default(cuid())
-  interviewId         String    @unique
-  interview           Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
-  
+  id          String    @id @default(cuid())
+  interviewId String    @unique
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
   // Ratings
-  technicalSkills     Int
-  communication       Int
-  cultureFit          Int
-  problemSolving      Int
-  
+  technicalSkills Int
+  communication   Int
+  cultureFit      Int
+  problemSolving  Int
+
   // Evaluation
-  strengths           String[]
-  concerns            String[]
+  strengths             String[]
+  concerns              String[]
   overallRecommendation String
-  notes               String?   @db.Text
-  
+  notes                 String?  @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -654,37 +654,37 @@ model InterviewScorecard {
 // ============================================
 
 model Notification {
-  id          String   @id @default(cuid())
-  userId      String
-  
-  type        String
-  title       String
-  message     String   @db.Text
-  link        String?
-  
-  isRead      Boolean  @default(false)
-  readAt      DateTime?
-  
+  id     String @id @default(cuid())
+  userId String
+
+  type    String
+  title   String
+  message String  @db.Text
+  link    String?
+
+  isRead Boolean   @default(false)
+  readAt DateTime?
+
   createdAt DateTime @default(now())
-  
+
   @@index([userId, isRead, createdAt])
   @@index([userId, createdAt])
 }
 
 model EmailTemplate {
-  id          String   @id @default(cuid())
-  name        String
-  type        String
-  subject     String
-  body        String   @db.Text
-  variables   String[]
-  
-  isDefault   Boolean  @default(false)
-  createdBy   String?
-  
+  id        String   @id @default(cuid())
+  name      String
+  type      String
+  subject   String
+  body      String   @db.Text
+  variables String[]
+
+  isDefault Boolean @default(false)
+  createdBy String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([type, isDefault])
 }
 
@@ -693,31 +693,31 @@ model EmailTemplate {
 // ============================================
 
 model SavedJob {
-  id          String   @id @default(cuid())
-  talentId    String
-  talent      TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
-  jobId       String
-  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  
+  id       String        @id @default(cuid())
+  talentId String
+  talent   TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
+  jobId    String
+  job      Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
-  
+
   @@unique([talentId, jobId])
   @@index([talentId, createdAt])
 }
 
 model SavedSearch {
-  id          String   @id @default(cuid())
-  talentId    String
-  talent      TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
-  
-  name        String
-  filters     Json
-  alertEnabled Boolean @default(false)
+  id       String        @id @default(cuid())
+  talentId String
+  talent   TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
+
+  name         String
+  filters      Json
+  alertEnabled Boolean   @default(false)
   lastNotified DateTime?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([talentId])
 }
 
@@ -726,56 +726,56 @@ model SavedSearch {
 // ============================================
 
 model PlatformAnalytics {
-  id          String   @id @default(cuid())
-  date        DateTime @unique
-  
+  id   String   @id @default(cuid())
+  date DateTime @unique
+
   // User metrics
   totalUsers  Int
   newUsers    Int
   activeUsers Int
-  
+
   // Talent metrics
-  totalTalents Int
-  basicTalents Int
+  totalTalents       Int
+  basicTalents       Int
   interviewedTalents Int
-  verifiedTalents Int
-  
+  verifiedTalents    Int
+
   // Employer metrics
   totalEmployers Int
   basicEmployers Int
-  proEmployers Int
-  
+  proEmployers   Int
+
   // Activity metrics
-  jobsPosted  Int
+  jobsPosted   Int
   applications Int
-  interviews  Int
-  hires       Int
-  
+  interviews   Int
+  hires        Int
+
   // Revenue
-  revenue     Float
-  
+  revenue Float
+
   createdAt DateTime @default(now())
-  
+
   @@index([date])
 }
 
 model SupportTicket {
-  id          String   @id @default(cuid())
-  userId      String
-  
+  id     String @id @default(cuid())
+  userId String
+
   subject     String
-  description String   @db.Text
+  description String @db.Text
   category    String
   priority    String
   status      String
-  
-  assignedTo  String?
-  resolution  String?  @db.Text
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  assignedTo String?
+  resolution String? @db.Text
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   resolvedAt DateTime?
-  
+
   @@index([userId, status])
   @@index([status, priority])
 }
