@@ -4,6 +4,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import axios, { AxiosInstance, AxiosError } from 'axios';
+import { SUBSCRIPTION_PLANS } from './plans.constants';
 
 interface NombaAuthResponse {
   data: {
@@ -127,5 +128,39 @@ export class PaymentsService {
     } catch (error) {
       this.handleAxiosError(error, 'Payment verification failed');
     }
+  }
+
+  async initiateSubscription(userEmail: string, planId: string) {
+    const allPlans = [
+      ...SUBSCRIPTION_PLANS.TALENT,
+      ...SUBSCRIPTION_PLANS.EMPLOYER,
+    ];
+    const plan = allPlans.find((p) => p.id === planId);
+
+    if (!plan) {
+      throw new InternalServerErrorException('Invalid plan selected');
+    }
+
+    if (plan.price === 0) {
+      return {
+        paymentRequired: false,
+        message: 'Free plan activated successfully',
+      };
+    }
+
+    const callbackUrl = `${process.env.FRONTEND_URL}/payment/verify`;
+
+    const nombaOrder = await this.createPaymentOrder({
+      amount: plan.price,
+      currency: plan.currency,
+      email: userEmail,
+      callbackUrl: callbackUrl,
+    });
+
+    return {
+      paymentRequired: true,
+      checkoutLink: nombaOrder.data.checkoutLink,
+      orderReference: nombaOrder.data.orderReference,
+    };
   }
 }
