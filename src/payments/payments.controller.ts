@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Query } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { SUBSCRIPTION_PLANS } from './plans.constants';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
@@ -33,5 +33,25 @@ export class PaymentsController {
       user.email,
       createSubscriptionDto.planId,
     );
+  }
+
+  @Get('verify')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Verify subscription payment status' })
+  async verifySubscription(
+    @Query('reference') reference: string,
+    @GetUser() user: User,
+  ) {
+    return this.paymentsService.verifyAndActivateSubscription(
+      reference,
+      user.email,
+    );
+  }
+
+  @Post('webhook')
+  @ApiOperation({ summary: 'Handle background payment updates from Nomba' })
+  async handleWebhook(@Body() payload: any) {
+    return this.paymentsService.processWebhook(payload);
   }
 }
