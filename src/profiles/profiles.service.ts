@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateTalentProfileDto } from './dto/update-talent.dto';
+import { CreateExperienceDto } from './dto/create-experience.dto';
 
 @Injectable()
 export class ProfilesService {
@@ -40,6 +41,32 @@ export class ProfilesService {
         lastName: data.lastName || '',
         location: data.location || '',
         ...data,
+      },
+    });
+  }
+
+  async addWorkExperience(userId: string, data: CreateExperienceDto) {
+    const talentProfile = await this.prisma.talentProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!talentProfile) {
+      throw new NotFoundException(
+        'Talent profile not found. Please update your profile details first.',
+      );
+    }
+
+    return this.prisma.workExperience.create({
+      data: {
+        talentId: talentProfile.id,
+        jobTitle: data.jobTitle,
+        company: data.company,
+        location: data.location,
+        startDate: new Date(data.startDate),
+        endDate: data.endDate ? new Date(data.endDate) : null,
+        isCurrent: data.isCurrent,
+        description: data.description,
       },
     });
   }
