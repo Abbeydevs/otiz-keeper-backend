@@ -8,9 +8,16 @@ import { PrismaModule } from './prisma/prisma.module';
 import { PaymentsModule } from './payments/payments.module';
 import { SubscriptionsController } from './subscriptions/subscriptions.controller';
 import { PaymentsService } from './payments/payments.service';
+import { ProfilesModule } from './profiles/profiles.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, PaymentsModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    UsersModule,
+    PaymentsModule,
+    ProfilesModule,
+  ],
   controllers: [AppController, SubscriptionsController],
   providers: [AppService, PrismaService, PaymentsService],
 })
