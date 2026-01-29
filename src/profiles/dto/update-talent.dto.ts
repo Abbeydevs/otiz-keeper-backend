@@ -41,4 +41,8 @@ export class UpdateTalentProfileDto {
   @IsOptional()
   @IsNumber()
   expectedSalaryMax?: number;
+
+  @IsOptional()
+  @IsString()
+  profilePicture?: string;
 }

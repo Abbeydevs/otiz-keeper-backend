@@ -7,6 +7,9 @@ import {
   Body,
   Patch,
   Post,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ProfilesService } from './profiles.service';
@@ -14,6 +17,9 @@ import { Request } from 'express';
 import { UpdateTalentProfileDto } from './dto/update-talent.dto';
 import { CreateExperienceDto } from './dto/create-experience.dto';
 import { CreateEducationDto } from './dto/create-education.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import type { MulterFile } from 'src/cloudinary/cloudinary.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 interface JwtUser {
   userId: string;
@@ -30,7 +36,10 @@ interface RequestWithUser extends Request {
 export class ProfilesController {
   private readonly logger = new Logger(ProfilesController.name);
 
-  constructor(private profilesService: ProfilesService) {}
+  constructor(
+    private profilesService: ProfilesService,
+    private cloudinaryService: CloudinaryService,
+  ) {}
 
   @Get('me')
   async getMyProfile(@Req() req: RequestWithUser) {
@@ -72,5 +81,27 @@ export class ProfilesController {
     this.logger.log(`Adding Education for User ID: ${userId}`);
 
     return this.profilesService.addEducation(userId, data);
+  }
+
+  @Post('upload/avatar')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAvatar(
+    @Req() req: RequestWithUser,
+    @UploadedFile() file: MulterFile,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    const userId = req.user?.userId;
+    this.logger.log(`Uploading Avatar for User ID: ${userId}`);
+
+    const result = await this.cloudinaryService.uploadFile(file);
+    const imageUrl: string = result.secure_url;
+    const updateData: UpdateTalentProfileDto = {
+      profilePicture: imageUrl,
+    };
+
+    return this.profilesService.updateTalentProfile(userId, updateData);
   }
 }
