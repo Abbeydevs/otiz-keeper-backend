@@ -42,13 +42,10 @@ interface NombaVerifyResponse {
   code: string;
   description: string;
   data: {
-    results: Array<{
-      status: string;
-      amount: string;
-      orderReference: string;
-      customerEmail: string;
-      timeCreated: string;
-    }>;
+    status: string;
+    amount: string;
+    orderReference?: string;
+    onlineCheckoutOrderReference?: string;
   };
 }
 
@@ -69,7 +66,6 @@ export class PaymentsService {
 
   private handleAxiosError(error: unknown, context: string): never {
     const axiosError = error as AxiosError;
-    // Log the full error for debugging
     this.logger.error(`${context} - Status: ${axiosError.response?.status}`);
     this.logger.error(
       JSON.stringify(axiosError.response?.data || axiosError.message, null, 2),
@@ -119,9 +115,19 @@ export class PaymentsService {
           currency: paymentData.currency,
           customerEmail: paymentData.email,
           description: 'Subscription Payment',
+          redirectUrl: paymentData.callbackUrl,
+          callbackUrl: paymentData.callbackUrl,
         },
+        redirectUrl: paymentData.callbackUrl,
         callbackUrl: paymentData.callbackUrl,
+
+        callback_url: paymentData.callbackUrl,
+        redirect_url: paymentData.callbackUrl,
       };
+
+      this.logger.log(
+        `Initializing Nomba Order with payload: ${JSON.stringify(payload)}`,
+      );
 
       const response = await this.nombaClient.post<NombaOrderResponse>(
         '/checkout/order',
@@ -145,20 +151,22 @@ export class PaymentsService {
     try {
       const accessToken = await this.getAccessToken();
 
+      this.logger.log(`Verifying Order Reference: ${orderReference}`);
+
       const response = await this.nombaClient.get<NombaVerifyResponse>(
-        `/checkout/transaction?orderReference=${orderReference}`,
+        `/transactions/accounts/single?orderReference=${orderReference}`,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
         },
       );
 
-      const results = response.data.data?.results;
-      const transaction =
-        Array.isArray(results) && results.length > 0 ? results[0] : null;
+      this.logger.log(
+        `Nomba Verify Response: ${JSON.stringify(response.data)}`,
+      );
 
-      if (!transaction) {
+      const transaction = response.data.data;
+
+      if (!transaction || !transaction.status) {
         throw new BadRequestException(
           'Transaction not found in payment gateway',
         );
@@ -168,7 +176,10 @@ export class PaymentsService {
         data: {
           status: transaction.status,
           amount: parseFloat(transaction.amount),
-          orderReference: transaction.orderReference,
+          orderReference:
+            transaction.onlineCheckoutOrderReference ||
+            transaction.orderReference ||
+            orderReference,
         },
       };
     } catch (error) {
@@ -323,6 +334,8 @@ export class PaymentsService {
     }
 
     const callbackUrl = `${process.env.FRONTEND_URL}/dashboard?payment_verify=true`;
+
+    console.log('Sending Callback URL to Nomba:', callbackUrl);
 
     const nombaOrder = await this.createPaymentOrder({
       amount: plan.price,

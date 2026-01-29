@@ -10,7 +10,7 @@ export const SUBSCRIPTION_PLANS = {
     {
       id: 'talent_pro',
       name: 'Pro Talent',
-      price: 5000,
+      price: 50,
       currency: 'NGN',
       features: [
         'Unlimited Applications',
@@ -23,14 +23,14 @@ export const SUBSCRIPTION_PLANS = {
     {
       id: 'employer_basic',
       name: 'Startup',
-      price: 15000,
+      price: 15,
       currency: 'NGN',
       features: ['Post 3 Jobs', 'View 50 Candidates', 'Basic Analytics'],
     },
     {
       id: 'employer_enterprise',
       name: 'Enterprise',
-      price: 50000,
+      price: 50,
       currency: 'NGN',
       features: [
         'Unlimited Jobs',
