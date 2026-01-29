@@ -12,7 +12,12 @@ export class ProfilesService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
-        talentProfile: true,
+        talentProfile: {
+          include: {
+            workExperiences: true,
+            educations: true,
+          },
+        },
         employerProfile: true,
       },
     });
