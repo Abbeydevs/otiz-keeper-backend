@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateTalentProfileDto } from './dto/update-talent.dto';
 import { CreateExperienceDto } from './dto/create-experience.dto';
+import { CreateEducationDto } from './dto/create-education.dto';
 
 @Injectable()
 export class ProfilesService {
@@ -67,6 +68,30 @@ export class ProfilesService {
         endDate: data.endDate ? new Date(data.endDate) : null,
         isCurrent: data.isCurrent,
         description: data.description,
+      },
+    });
+  }
+
+  async addEducation(userId: string, data: CreateEducationDto) {
+    const talentProfile = await this.prisma.talentProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!talentProfile) {
+      throw new NotFoundException('Talent profile not found');
+    }
+
+    return this.prisma.education.create({
+      data: {
+        talentId: talentProfile.id,
+        institution: data.institution,
+        degree: data.degree,
+        fieldOfStudy: data.fieldOfStudy,
+        startDate: new Date(data.startDate),
+        endDate: data.endDate ? new Date(data.endDate) : null,
+        isCurrent: data.isCurrent,
+        grade: data.grade,
       },
     });
   }

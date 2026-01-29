@@ -13,6 +13,7 @@ import { ProfilesService } from './profiles.service';
 import { Request } from 'express';
 import { UpdateTalentProfileDto } from './dto/update-talent.dto';
 import { CreateExperienceDto } from './dto/create-experience.dto';
+import { CreateEducationDto } from './dto/create-education.dto';
 
 interface JwtUser {
   userId: string;
@@ -60,5 +61,16 @@ export class ProfilesController {
     this.logger.log(`Adding Work Experience for User ID: ${userId}`);
 
     return this.profilesService.addWorkExperience(userId, data);
+  }
+
+  @Post('education')
+  async addEducation(
+    @Req() req: RequestWithUser,
+    @Body() data: CreateEducationDto,
+  ) {
+    const userId = req.user?.userId;
+    this.logger.log(`Adding Education for User ID: ${userId}`);
+
+    return this.profilesService.addEducation(userId, data);
   }
 }
