@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { UpdateTalentProfileDto } from './dto/update-talent.dto';
 
 @Injectable()
 export class ProfilesService {
@@ -22,5 +23,24 @@ export class ProfilesService {
     const { password, ...result } = user;
 
     return result;
+  }
+
+  async updateTalentProfile(userId: string, data: UpdateTalentProfileDto) {
+    return this.prisma.talentProfile.upsert({
+      where: {
+        userId: userId,
+      },
+      update: {
+        ...data,
+        updatedAt: new Date(),
+      },
+      create: {
+        userId: userId,
+        firstName: data.firstName || '',
+        lastName: data.lastName || '',
+        location: data.location || '',
+        ...data,
+      },
+    });
   }
 }

@@ -1,7 +1,16 @@
-import { Controller, Get, UseGuards, Req, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  UseGuards,
+  Req,
+  Logger,
+  Body,
+  Patch,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ProfilesService } from './profiles.service';
 import { Request } from 'express';
+import { UpdateTalentProfileDto } from './dto/update-talent.dto';
 
 interface JwtUser {
   userId: string;
@@ -27,5 +36,16 @@ export class ProfilesController {
     this.logger.log(`Fetching profile for User ID: ${userId}`);
 
     return this.profilesService.getMyProfile(userId);
+  }
+
+  @Patch('talent')
+  async updateTalentProfile(
+    @Req() req: RequestWithUser,
+    @Body() updateData: UpdateTalentProfileDto,
+  ) {
+    const userId = req.user?.userId;
+    this.logger.log(`Updating Talent Profile for User ID: ${userId}`);
+
+    return this.profilesService.updateTalentProfile(userId, updateData);
   }
 }
