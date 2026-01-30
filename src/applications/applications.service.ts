@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { ApplicationStatus } from '@prisma/client';
+import { UpdateApplicationStageDto } from './dto/update-application-stage.dto';
 
 @Injectable()
 export class ApplicationsService {
@@ -141,6 +142,54 @@ export class ApplicationsService {
           },
         },
       },
+    });
+  }
+
+  async updateStage(
+    userId: string,
+    applicationId: string,
+    data: UpdateApplicationStageDto,
+  ) {
+    const application = await this.prisma.application.findUnique({
+      where: { id: applicationId },
+      include: {
+        job: {
+          include: { employer: true },
+        },
+      },
+    });
+
+    if (!application) {
+      throw new NotFoundException('Application not found');
+    }
+
+    if (application.job.employer.userId !== userId) {
+      throw new ForbiddenException(
+        'You do not have permission to manage this application',
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const updatedApplication = await tx.application.update({
+        where: { id: applicationId },
+        data: {
+          stage: data.stage,
+          notes: data.notes || undefined,
+          rejectionReason: data.stage === 'REJECTED' ? data.notes : undefined,
+        },
+      });
+
+      await tx.applicationStatusHistory.create({
+        data: {
+          applicationId,
+          fromStage: application.stage,
+          toStage: data.stage,
+          changedBy: userId,
+          notes: data.notes,
+        },
+      });
+
+      return updatedApplication;
     });
   }
 }

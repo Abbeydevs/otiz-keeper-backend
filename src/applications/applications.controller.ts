@@ -7,12 +7,14 @@ import {
   UseGuards,
   ForbiddenException,
   Get,
+  Patch,
 } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserRole } from '@prisma/client';
 import type { RequestWithUser } from '../auth/interfaces/request-with-user.interface';
+import { UpdateApplicationStageDto } from './dto/update-application-stage.dto';
 
 @Controller('applications')
 @UseGuards(JwtAuthGuard)
@@ -61,5 +63,26 @@ export class ApplicationsController {
     }
 
     return this.applicationsService.findJobApplications(user.userId, jobId);
+  }
+
+  @Patch(':id/stage')
+  async updateStage(
+    @Req() req: RequestWithUser,
+    @Param('id') applicationId: string,
+    @Body() updateDto: UpdateApplicationStageDto,
+  ) {
+    const user = req.user;
+
+    if (user.role !== UserRole.EMPLOYER) {
+      throw new ForbiddenException(
+        'Only employers can manage application stages',
+      );
+    }
+
+    return this.applicationsService.updateStage(
+      user.userId,
+      applicationId,
+      updateDto,
+    );
   }
 }
