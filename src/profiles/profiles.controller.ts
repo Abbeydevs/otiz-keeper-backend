@@ -10,6 +10,8 @@ import {
   UploadedFile,
   UseInterceptors,
   BadRequestException,
+  Param,
+  Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ProfilesService } from './profiles.service';
@@ -134,5 +136,44 @@ export class ProfilesController {
     const imageUrl: string = result.secure_url;
 
     return this.profilesService.updateEmployerLogo(userId, imageUrl);
+  }
+
+  @Delete('experience/:id')
+  async deleteWorkExperience(
+    @Req() req: RequestWithUser,
+    @Param('id') id: string,
+  ) {
+    const userId = req.user?.userId;
+    this.logger.log(`Deleting Experience ${id} for User ID: ${userId}`);
+    return this.profilesService.deleteWorkExperience(userId, id);
+  }
+
+  @Delete('education/:id')
+  async deleteEducation(@Req() req: RequestWithUser, @Param('id') id: string) {
+    const userId = req.user?.userId;
+    this.logger.log(`Deleting Education ${id} for User ID: ${userId}`);
+    return this.profilesService.deleteEducation(userId, id);
+  }
+
+  @Post('upload/resume')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadResume(
+    @Req() req: RequestWithUser,
+    @UploadedFile() file: MulterFile,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    const userId = req.user?.userId;
+
+    const result = await this.cloudinaryService.uploadFile(file);
+
+    return this.profilesService.uploadResume(
+      userId,
+      result.secure_url,
+      file.originalname,
+      file.size,
+    );
   }
 }

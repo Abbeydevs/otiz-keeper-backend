@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateTalentProfileDto } from './dto/update-talent.dto';
 import { CreateExperienceDto } from './dto/create-experience.dto';
@@ -17,6 +21,7 @@ export class ProfilesService {
           include: {
             workExperiences: true,
             educations: true,
+            cvs: true,
           },
         },
         employerProfile: true,
@@ -131,6 +136,78 @@ export class ProfilesService {
     return this.prisma.employerProfile.update({
       where: { userId },
       data: { logo: logoUrl },
+    });
+  }
+
+  async deleteWorkExperience(userId: string, experienceId: string) {
+    const experience = await this.prisma.workExperience.findUnique({
+      where: { id: experienceId },
+      include: { talent: true },
+    });
+
+    if (!experience) {
+      throw new NotFoundException('Work experience not found');
+    }
+
+    if (experience.talent.userId !== userId) {
+      throw new UnauthorizedException(
+        'You do not have permission to delete this entry',
+      );
+    }
+
+    return this.prisma.workExperience.delete({
+      where: { id: experienceId },
+    });
+  }
+
+  async deleteEducation(userId: string, educationId: string) {
+    const education = await this.prisma.education.findUnique({
+      where: { id: educationId },
+      include: { talent: true },
+    });
+
+    if (!education) {
+      throw new NotFoundException('Education entry not found');
+    }
+
+    if (education.talent.userId !== userId) {
+      throw new UnauthorizedException(
+        'You do not have permission to delete this entry',
+      );
+    }
+
+    return this.prisma.education.delete({
+      where: { id: educationId },
+    });
+  }
+
+  async uploadResume(
+    userId: string,
+    fileUrl: string,
+    fileName: string,
+    fileSize: number,
+  ) {
+    const talentProfile = await this.prisma.talentProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!talentProfile) {
+      throw new NotFoundException('Talent profile not found');
+    }
+
+    await this.prisma.cV.updateMany({
+      where: { talentId: talentProfile.id },
+      data: { isPrimary: false },
+    });
+
+    return this.prisma.cV.create({
+      data: {
+        talentId: talentProfile.id,
+        fileUrl,
+        fileName,
+        fileSize,
+        isPrimary: true,
+      },
     });
   }
 }
