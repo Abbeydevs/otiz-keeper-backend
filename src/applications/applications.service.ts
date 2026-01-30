@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
@@ -82,6 +83,59 @@ export class ApplicationsService {
               select: {
                 companyName: true,
                 logo: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async findJobApplications(userId: string, jobId: string) {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      include: { employer: true },
+    });
+
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+
+    if (job.employer.userId !== userId) {
+      throw new ForbiddenException(
+        'You do not have permission to view applications for this job',
+      );
+    }
+
+    return this.prisma.application.findMany({
+      where: { jobId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        talent: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            headline: true,
+            skills: {
+              select: {
+                skill: {
+                  select: { name: true },
+                },
+              },
+            },
+            cvs: {
+              where: { isPrimary: true },
+              take: 1,
+              select: {
+                fileUrl: true,
+                fileName: true,
+              },
+            },
+            user: {
+              select: {
+                email: true,
+                image: true,
               },
             },
           },

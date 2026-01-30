@@ -48,4 +48,18 @@ export class ApplicationsController {
 
     return this.applicationsService.findMyApplications(user.userId);
   }
+
+  @Get('job/:id')
+  async findJobApplications(
+    @Req() req: RequestWithUser,
+    @Param('id') jobId: string,
+  ) {
+    const user = req.user;
+
+    if (user.role !== UserRole.EMPLOYER) {
+      throw new ForbiddenException('Only employers can view job applications');
+    }
+
+    return this.applicationsService.findJobApplications(user.userId, jobId);
+  }
 }
