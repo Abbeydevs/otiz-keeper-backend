@@ -189,4 +189,24 @@ export class JobsService {
       },
     });
   }
+
+  async findMyJobs(userId: string) {
+    const employerProfile = await this.prisma.employerProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!employerProfile) {
+      throw new NotFoundException('Employer profile not found');
+    }
+
+    return this.prisma.job.findMany({
+      where: { employerId: employerProfile.id },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: { applications: true },
+        },
+      },
+    });
+  }
 }

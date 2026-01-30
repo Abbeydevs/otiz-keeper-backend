@@ -62,4 +62,16 @@ export class JobsController {
 
     return this.jobsService.update(user.userId, id, updateJobDto);
   }
+
+  @Get('my-jobs')
+  @UseGuards(JwtAuthGuard)
+  async findMyJobs(@Req() req: RequestWithUser) {
+    const user = req.user;
+    if (user.role !== UserRole.EMPLOYER) {
+      throw new ForbiddenException(
+        'Only employers can view their job dashboard',
+      );
+    }
+    return this.jobsService.findMyJobs(user.userId);
+  }
 }
