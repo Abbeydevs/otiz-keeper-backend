@@ -57,4 +57,36 @@ export class ApplicationsService {
       },
     });
   }
+
+  async findMyApplications(userId: string) {
+    const talentProfile = await this.prisma.talentProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!talentProfile) {
+      throw new NotFoundException('Talent profile not found');
+    }
+
+    return this.prisma.application.findMany({
+      where: { talentId: talentProfile.id },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        job: {
+          select: {
+            id: true,
+            title: true,
+            location: true,
+            employmentType: true,
+            status: true,
+            employer: {
+              select: {
+                companyName: true,
+                logo: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
 }

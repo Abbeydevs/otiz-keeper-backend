@@ -6,6 +6,7 @@ import {
   Req,
   UseGuards,
   ForbiddenException,
+  Get,
 } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
@@ -35,5 +36,16 @@ export class ApplicationsController {
       jobId,
       createApplicationDto,
     );
+  }
+
+  @Get('my-applications')
+  async findMyApplications(@Req() req: RequestWithUser) {
+    const user = req.user;
+
+    if (user.role !== UserRole.TALENT) {
+      throw new ForbiddenException('Only talents can view their applications');
+    }
+
+    return this.applicationsService.findMyApplications(user.userId);
   }
 }
