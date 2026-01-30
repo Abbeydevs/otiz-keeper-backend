@@ -1,23 +1,31 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
+  Query,
   Req,
   UseGuards,
   ForbiddenException,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
+import { GetJobsFilterDto } from './dto/get-jobs.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserRole } from '@prisma/client';
-import type { RequestWithUser } from 'src/auth/interfaces/request-with-user.interface';
+import type { RequestWithUser } from '../auth/interfaces/request-with-user.interface';
 
 @Controller('jobs')
-@UseGuards(JwtAuthGuard)
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
+  @Get()
+  async findAll(@Query() filters: GetJobsFilterDto) {
+    return this.jobsService.findAll(filters);
+  }
+
   @Post()
+  @UseGuards(JwtAuthGuard)
   async createJob(
     @Req() req: RequestWithUser,
     @Body() createJobDto: CreateJobDto,
