@@ -115,4 +115,33 @@ export class JobsService {
       },
     };
   }
+
+  async findOne(id: string) {
+    const job = await this.prisma.job.findUnique({
+      where: { id },
+      include: {
+        employer: {
+          select: {
+            id: true,
+            companyName: true,
+            logo: true,
+            location: true,
+            website: true,
+            industry: true,
+            companySize: true,
+            description: true,
+          },
+        },
+        screeningQuestions: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    if (!job) {
+      throw new NotFoundException(`Job with ID ${id} not found`);
+    }
+
+    return job;
+  }
 }

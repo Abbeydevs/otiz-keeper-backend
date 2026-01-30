@@ -7,6 +7,7 @@ import {
   Req,
   UseGuards,
   ForbiddenException,
+  Param,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
@@ -37,5 +38,10 @@ export class JobsController {
     }
 
     return this.jobsService.createJob(user.userId, createJobDto);
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.jobsService.findOne(id);
   }
 }
