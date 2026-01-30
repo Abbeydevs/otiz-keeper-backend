@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UpdateTalentProfileDto } from './dto/update-talent.dto';
 import { CreateExperienceDto } from './dto/create-experience.dto';
 import { CreateEducationDto } from './dto/create-education.dto';
+import { UpdateEmployerProfileDto } from './dto/update-employer.dto';
 
 @Injectable()
 export class ProfilesService {
@@ -97,6 +98,29 @@ export class ProfilesService {
         endDate: data.endDate ? new Date(data.endDate) : null,
         isCurrent: data.isCurrent,
         grade: data.grade,
+      },
+    });
+  }
+
+  async updateEmployerProfile(userId: string, data: UpdateEmployerProfileDto) {
+    return this.prisma.employerProfile.upsert({
+      where: { userId },
+      update: {
+        companyName: data.companyName,
+        industry: data.industry,
+        website: data.website,
+        description: data.description,
+        ...(data.location && { location: data.location }),
+        ...(data.companySize && { companySize: data.companySize }),
+      },
+      create: {
+        userId,
+        companyName: data.companyName,
+        industry: data.industry,
+        website: data.website || '',
+        description: data.description || '',
+        location: data.location || 'Not specified',
+        companySize: data.companySize || '1-10',
       },
     });
   }

@@ -20,6 +20,7 @@ import { CreateEducationDto } from './dto/create-education.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import type { MulterFile } from 'src/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateEmployerProfileDto } from './dto/update-employer.dto';
 
 interface JwtUser {
   userId: string;
@@ -59,6 +60,17 @@ export class ProfilesController {
     this.logger.log(`Updating Talent Profile for User ID: ${userId}`);
 
     return this.profilesService.updateTalentProfile(userId, updateData);
+  }
+
+  @Patch('employer')
+  async updateEmployerProfile(
+    @Req() req: RequestWithUser,
+    @Body() data: UpdateEmployerProfileDto,
+  ) {
+    const userId = req.user?.userId;
+    this.logger.log(`Updating Employer Profile for User ID: ${userId}`);
+
+    return this.profilesService.updateEmployerProfile(userId, data);
   }
 
   @Post('experience')

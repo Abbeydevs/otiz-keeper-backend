@@ -209,12 +209,13 @@ export class PaymentsService {
     }
 
     const amountPaid = verification.data.amount;
-    const allPlans = [
-      ...SUBSCRIPTION_PLANS.TALENT,
-      ...SUBSCRIPTION_PLANS.EMPLOYER,
-    ];
 
-    const plan = allPlans.find((p) => p.price === Number(amountPaid));
+    const relevantPlans =
+      user.role === UserRole.EMPLOYER
+        ? SUBSCRIPTION_PLANS.EMPLOYER
+        : SUBSCRIPTION_PLANS.TALENT;
+
+    const plan = relevantPlans.find((p) => p.price === Number(amountPaid));
 
     if (!plan) {
       this.logger.warn(
