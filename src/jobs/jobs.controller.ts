@@ -8,6 +8,7 @@ import {
   UseGuards,
   ForbiddenException,
   Param,
+  Patch,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
@@ -15,6 +16,7 @@ import { GetJobsFilterDto } from './dto/get-jobs.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserRole } from '@prisma/client';
 import type { RequestWithUser } from '../auth/interfaces/request-with-user.interface';
+import { UpdateJobDto } from './dto/update-job.dto';
 
 @Controller('jobs')
 export class JobsController {
@@ -43,5 +45,21 @@ export class JobsController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.jobsService.findOne(id);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard)
+  async update(
+    @Req() req: RequestWithUser,
+    @Param('id') id: string,
+    @Body() updateJobDto: UpdateJobDto,
+  ) {
+    const user = req.user;
+
+    if (user.role !== UserRole.EMPLOYER) {
+      throw new ForbiddenException('Only employers can manage jobs');
+    }
+
+    return this.jobsService.update(user.userId, id, updateJobDto);
   }
 }

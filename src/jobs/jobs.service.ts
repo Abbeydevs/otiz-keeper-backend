@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { GetJobsFilterDto } from './dto/get-jobs.dto';
 import { JobStatus, Prisma } from '@prisma/client';
+import { UpdateJobDto } from './dto/update-job.dto';
 
 @Injectable()
 export class JobsService {
@@ -143,5 +148,45 @@ export class JobsService {
     }
 
     return job;
+  }
+
+  async update(userId: string, jobId: string, data: UpdateJobDto) {
+    const job = await this.prisma.job.findUnique({
+      where: { id: jobId },
+      include: { employer: true },
+    });
+
+    if (!job) {
+      throw new NotFoundException(`Job with ID ${jobId} not found`);
+    }
+
+    if (job.employer.userId !== userId) {
+      throw new ForbiddenException(
+        'You do not have permission to edit this job',
+      );
+    }
+
+    return this.prisma.job.update({
+      where: { id: jobId },
+      data: {
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        employmentType: data.employmentType,
+        location: data.location,
+        isRemote: data.isRemote,
+        salaryMin: data.salaryMin,
+        salaryMax: data.salaryMax,
+        salaryCurrency: data.salaryCurrency,
+        requirements: data.requirements,
+        responsibilities: data.responsibilities,
+        benefits: data.benefits,
+        applicationDeadline: data.applicationDeadline
+          ? new Date(data.applicationDeadline)
+          : undefined,
+        status: data.status,
+        postToLinkedIn: data.postToLinkedIn,
+      },
+    });
   }
 }
