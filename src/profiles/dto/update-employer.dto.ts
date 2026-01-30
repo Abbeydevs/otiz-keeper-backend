@@ -24,4 +24,8 @@ export class UpdateEmployerProfileDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  logo?: string;
 }

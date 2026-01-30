@@ -112,6 +112,7 @@ export class ProfilesService {
         description: data.description,
         ...(data.location && { location: data.location }),
         ...(data.companySize && { companySize: data.companySize }),
+        ...(data.logo && { logo: data.logo }),
       },
       create: {
         userId,
@@ -121,7 +122,15 @@ export class ProfilesService {
         description: data.description || '',
         location: data.location || 'Not specified',
         companySize: data.companySize || '1-10',
+        logo: data.logo || null,
       },
+    });
+  }
+
+  async updateEmployerLogo(userId: string, logoUrl: string) {
+    return this.prisma.employerProfile.update({
+      where: { userId },
+      data: { logo: logoUrl },
     });
   }
 }

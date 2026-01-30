@@ -274,7 +274,6 @@ model EmployerProfile {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Company Info
   companyName String
   companyLogo String?
   industry    String
@@ -283,19 +282,18 @@ model EmployerProfile {
   description String? @db.Text
   location    String
 
-  // Tier & Status
+  logo String?
+
   tier           EmployerTier  @default(BASIC)
   subscriptionId String?
   subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
 
-  // Limits
   activeJobsCount         Int      @default(0)
   activeJobsLimit         Int      @default(3)
   candidateViewsThisMonth Int      @default(0)
   candidateViewsLimit     Int      @default(50)
   lastViewsReset          DateTime @default(now())
 
-  // Relations
   jobs       Job[]
   interviews Interview[]
 
@@ -324,27 +322,22 @@ model Subscription {
   userType UserRole
   tier     String
 
-  // Pricing
   amount   Float
   currency String @default("NGN")
 
-  // Duration & Status
   startDate   DateTime
   endDate     DateTime
   status      SubscriptionStatus
   isRecurring Boolean            @default(true)
 
-  // Payment Info
   paymentReference String    @unique
   paymentMethod    String?
   lastPaymentDate  DateTime?
   nextPaymentDate  DateTime?
 
-  // Nomba specific
   nombaTransactionId String?
   nombaPaymentLink   String?
 
-  // Relations
   talents   TalentProfile[]
   employers EmployerProfile[]
   payments  Payment[]
@@ -373,7 +366,6 @@ model Payment {
   currency String        @default("NGN")
   status   PaymentStatus
 
-  // Nomba Integration
   nombaReference     String  @unique
   nombaTransactionId String?
   nombaPaymentLink   String?
@@ -432,7 +424,6 @@ model Job {
   employerId String
   employer   EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
 
-  // Job Details
   title          String
   description    String         @db.Text
   category       JobCategory
@@ -440,35 +431,28 @@ model Job {
   location       String
   isRemote       Boolean        @default(false)
 
-  // Salary
   salaryMin      Int?
   salaryMax      Int?
   salaryCurrency String @default("NGN")
 
-  // Requirements
   requirements     String[]
   responsibilities String[]
   benefits         String[]
 
-  // Status & Visibility
   status              JobStatus @default(DRAFT)
   isFeatured          Boolean   @default(false)
   featuredUntil       DateTime?
   applicationDeadline DateTime?
 
-  // External Posting
   postToLinkedIn Boolean @default(false)
   linkedInPosted Boolean @default(false)
   linkedInUrl    String?
 
-  // Metrics
   views            Int @default(0)
   applicationCount Int @default(0)
 
-  // Screening
   screeningQuestions ScreeningQuestion[]
 
-  // Relations
   applications   Application[]
   savedByTalents SavedJob[]
 
@@ -526,30 +510,24 @@ model Application {
   talentId String
   talent   TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
 
-  // Application Data
   coverLetter String? @db.Text
   cvId        String?
   cv          CV?     @relation(fields: [cvId], references: [id])
 
-  // Status & Stage
   stage  ApplicationStage  @default(APPLIED)
   status ApplicationStatus @default(ACTIVE)
 
-  // Employer Evaluation
   rating          Int?
   notes           String? @db.Text
   rejectionReason String?
 
-  // Screening Questions
   screeningAnswers Json?
 
-  // Timeline
   appliedAt     DateTime  @default(now())
   reviewedAt    DateTime?
   interviewedAt DateTime?
   decidedAt     DateTime?
 
-  // Relations
   interviews    Interview[]
   statusHistory ApplicationStatusHistory[]
 
@@ -599,25 +577,19 @@ model Interview {
   employerId    String
   employer      EmployerProfile @relation(fields: [employerId], references: [id])
 
-  // Scheduling
   scheduledAt DateTime
   duration    Int
   timezone    String
 
-  // Whereby Integration
   meetingRoomUrl String?
   meetingRoomId  String?
 
-  // Status
   status InterviewStatus @default(SCHEDULED)
 
-  // Meeting Details
   notes String? @db.Text
 
-  // Scorecard
   scorecard InterviewScorecard?
 
-  // Reminders
   remindersSent Boolean @default(false)
 
   createdAt DateTime @default(now())
@@ -633,13 +605,11 @@ model InterviewScorecard {
   interviewId String    @unique
   interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
 
-  // Ratings
   technicalSkills Int
   communication   Int
   cultureFit      Int
   problemSolving  Int
 
-  // Evaluation
   strengths             String[]
   concerns              String[]
   overallRecommendation String
@@ -729,30 +699,24 @@ model PlatformAnalytics {
   id   String   @id @default(cuid())
   date DateTime @unique
 
-  // User metrics
   totalUsers  Int
   newUsers    Int
   activeUsers Int
 
-  // Talent metrics
   totalTalents       Int
   basicTalents       Int
   interviewedTalents Int
   verifiedTalents    Int
 
-  // Employer metrics
   totalEmployers Int
   basicEmployers Int
   proEmployers   Int
 
-  // Activity metrics
   jobsPosted   Int
   applications Int
   interviews   Int
   hires        Int
-
-  // Revenue
-  revenue Float
+  revenue      Float
 
   createdAt DateTime @default(now())
 

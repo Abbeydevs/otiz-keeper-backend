@@ -116,4 +116,23 @@ export class ProfilesController {
 
     return this.profilesService.updateTalentProfile(userId, updateData);
   }
+
+  @Post('upload/logo')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadLogo(
+    @Req() req: RequestWithUser,
+    @UploadedFile() file: MulterFile,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    const userId = req.user?.userId;
+    this.logger.log(`Uploading Logo for Employer ID: ${userId}`);
+
+    const result = await this.cloudinaryService.uploadFile(file);
+    const imageUrl: string = result.secure_url;
+
+    return this.profilesService.updateEmployerLogo(userId, imageUrl);
+  }
 }
